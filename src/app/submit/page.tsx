@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from 'react';
 
+interface FormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
 interface OfflineJob {
   id: string;
   type: string;
-  data: any;
+  data: FormData;
   timestamp: string;
   status: string;
   attempts: number;
@@ -18,7 +24,12 @@ export default function SubmitPage() {
     email: '',
     message: ''
   });
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    job?: { id: string; [key: string]: unknown };
+    message?: string;
+    error?: string;
+    offline?: boolean;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [offlineJobs, setOfflineJobs] = useState<OfflineJob[]>([]);  const [isOnline, setIsOnline] = useState(true);
   
@@ -203,7 +214,7 @@ export default function SubmitPage() {
       navigator.serviceWorker?.removeEventListener('message', handleMessage);
       clearInterval(retryInterval);
     };
-  }, []);  const handleOfflineSubmission = async (formData: any) => {
+  }, []);  const handleOfflineSubmission = async (formData: FormData) => {
     
     // Generate a unique job ID
     const jobId = `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -227,12 +238,11 @@ export default function SubmitPage() {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       try {
         navigator.serviceWorker.controller.postMessage({
-          type: 'STORE_OFFLINE_FORM',
-          data: {
-            jobId,
-            formData,
-            timestamp: Date.now()
-          }
+          type: 'STORE_OFFLINE_FORM',            data: {
+              jobId,
+              formData,
+              timestamp: Date.now()
+            }
         });
       } catch (error) {
         console.warn('Could not notify service worker:', error);
@@ -243,11 +253,11 @@ export default function SubmitPage() {
       try {
         const registration = await navigator.serviceWorker.ready;        // Check if sync is available (Background Sync API)
         if ('sync' in registration) {
-          await (registration as any).sync.register('background-sync-forms');
+          await (registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register('background-sync-forms');
         }
       } catch (error) {
         console.warn('Background sync registration failed:', error);
-      }    }
+      }}
     
     return { job, offline: true };
   };
@@ -257,7 +267,7 @@ export default function SubmitPage() {
     setLoading(true);
     setResult(null);    try {
       
-      // Check if we're offline first
+      // Check if we&apos;re offline first
       if (!navigator.onLine) {
         const result = await handleOfflineSubmission(formData);
         setResult(result);
@@ -357,7 +367,7 @@ export default function SubmitPage() {
               ))}
             </div>
             <p className="text-orange-100 text-sm mt-3">
-              These will be automatically submitted when you're back online.
+              These will be automatically submitted when you are back online.
             </p>
           </div>
         )}
@@ -423,16 +433,15 @@ export default function SubmitPage() {
         )}        {/* Instructions */}
         <div className="bg-yellow-500/20 backdrop-blur rounded-lg p-6 border border-yellow-500/30 mt-6">
           <h3 className="text-xl font-bold text-yellow-100 mb-4">🧪 Test Steps</h3>
-          <div className="text-yellow-100 space-y-2">
-            <p><strong>Online Test:</strong> Submit form normally (should show green status)</p>
+          <div className="text-yellow-100 space-y-2">            <p><strong>Online Test:</strong> Submit form normally (should show green status)</p>
             <p><strong>Offline Test:</strong></p>
             <ol className="list-decimal list-inside ml-4 space-y-1">
-              <li>Open DevTools → Network → Set to "Offline"</li>
+              <li>Open DevTools → Network → Set to &quot;Offline&quot;</li>
               <li>Fill and submit the form</li>
               <li>Form should stay on this page and show offline job in orange box</li>
-              <li>Set network back to "Online" in DevTools</li>
+              <li>Set network back to &quot;Online&quot; in DevTools</li>
               <li>Jobs should auto-process within seconds (watch console logs)</li>
-              <li>Or click "🔄 Sync Now" button to process immediately</li>
+              <li>Or click &quot;🔄 Sync Now&quot; button to process immediately</li>
               <li>Orange jobs should disappear when successfully synced</li>
             </ol>
             <p><strong>Auto-Retry:</strong> Jobs are automatically retried every 30 seconds when online</p>

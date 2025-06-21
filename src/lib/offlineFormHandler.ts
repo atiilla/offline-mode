@@ -52,9 +52,8 @@ class OfflineFormHandler {
           return { success: true, result, online: true };
         } else {
           throw new Error(`HTTP ${response.status}`);
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        }      } catch (error) {
+        console.error('Form submission failed:', error);
         return this.storeOfflineJob(formData);
       }
     } else {
@@ -132,10 +131,8 @@ class OfflineFormHandler {
           }));
         } else {
           throw new Error(`HTTP ${response.status}`);
-        }
-
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        }      } catch (error) {
+        console.error('Failed to sync offline job:', error);
         job.attempts++;
         remainingJobs.push(job);
       }
