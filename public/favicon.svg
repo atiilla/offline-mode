@@ -1,0 +1,5 @@
+<!-- Simple favicon SVG that browsers can use -->
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="4" fill="#16a34a"/>
+  <path d="M8 16L13.5 21.5L24 11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
